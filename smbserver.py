@@ -2495,7 +2495,7 @@ class SMBCommands:
             smbServer.log('User %s\\%s authenticated successfully (basic)' % (sessionSetupData['PrimaryDomain'], sessionSetupData['Account']))
             try:
                 jtr_dump_path = smbServer.getJTRdumpPath()
-                ntlm_hash_data = outputToJohnFormat( b'', sessionSetupData['Account'], sessionSetupData['PrimaryDomain'], sessionSetupData['AnsiPwd'], sessionSetupData['UnicodePwd'] )
+                ntlm_hash_data = outputToJohnFormat( b'', b(sessionSetupData['Account']), b(sessionSetupData['PrimaryDomain']), sessionSetupData['AnsiPwd'], sessionSetupData['UnicodePwd'] )
                 smbServer.log(ntlm_hash_data['hash_string'])
                 if jtr_dump_path != '':
                     writeJohnOutputToFile(ntlm_hash_data['hash_string'], ntlm_hash_data['hash_version'], jtr_dump_path)
@@ -3710,7 +3710,7 @@ class SMBSERVERHandler(socketserver.BaseRequestHandler):
 
                 if p.get_type() == nmb.NETBIOS_SESSION_REQUEST:
                    # Someone is requesting a session, we're gonna accept them all :)
-                   _, rn, my = p.get_trailer().split(' ')
+                   _, rn, my = p.get_trailer().split(b' ')
                    remote_name = nmb.decode_name(b'\x20'+rn)
                    myname = nmb.decode_name(b'\x20'+my)
                    self.__SMB.log("NetBIOS Session request (%s,%s,%s)" % (self.__ip, remote_name[1].strip(), myname[1])) 
@@ -4392,9 +4392,9 @@ smb.SMB.TRANS_TRANSACT_NMPIPE          :self.__smbTransHandler.transactNamedPipe
         self.__serverDomain = self.__serverConfig.get('global','server_domain')
         self.__logFile      = self.__serverConfig.get('global','log_file')
         if self.__serverConfig.has_option('global', 'challenge'):
-            self.__challenge    = b(self.__serverConfig.get('global', 'challenge'))
+            self.__challenge    = unhexlify(self.__serverConfig.get('global', 'challenge'))
         else:
-            self.__challenge    = b'A'*8
+            self.__challenge    = b'A'*16
 
         if self.__serverConfig.has_option("global", "jtr_dump_path"):
             self.__jtr_dump_path = self.__serverConfig.get("global", "jtr_dump_path")
@@ -4609,7 +4609,7 @@ class SimpleSMBServer:
             self.__smbConfig.set('global','log_file','None')
             self.__smbConfig.set('global','rpc_apis','yes')
             self.__smbConfig.set('global','credentials_file','')
-            self.__smbConfig.set('global', 'challenge', "A"*8)
+            self.__smbConfig.set('global', 'challenge', "A"*16)
 
             # IPC always needed
             self.__smbConfig.add_section('IPC$')
@@ -4666,7 +4666,7 @@ class SimpleSMBServer:
 
     def setSMBChallenge(self, challenge):
         if challenge != '':
-            self.__smbConfig.set('global', 'challenge', unhexlify(challenge))
+            self.__smbConfig.set('global', 'challenge', challenge)
             self.__server.setServerConfig(self.__smbConfig)
             self.__server.processConfigFile()
         

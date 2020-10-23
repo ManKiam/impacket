@@ -172,7 +172,7 @@ class COMVERSION(NDRSTRUCT):
         NDRSTRUCT.__init__(self, data, isNDR64)
         if data is None:
             self['MajorVersion'] = 5
-            self['MinorVersion'] = 6
+            self['MinorVersion'] = 7
 
 class PCOMVERSION(NDRPOINTER):
     referent = (
@@ -333,7 +333,7 @@ class DUALSTRINGARRAYPACKED(NDRSTRUCT):
         ('wSecurityOffset',USHORT),
         ('aStringArray',':'),
     )
-    def getDataLen(self, data):
+    def getDataLen(self, data, offset=0):
         return self['wNumEntries']*2
 
 # 2.2.18.7 OBJREF_EXTENDED

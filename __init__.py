@@ -8,7 +8,7 @@
 #
 
 # Set default logging handler to avoid "No handler found" warnings.
-__version__ = 1
+__version__ = 2
 import logging
 try:  # Python 2.7+
     from logging import NullHandler

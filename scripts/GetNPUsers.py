@@ -199,6 +199,10 @@ class GetUserNoPreAuth:
             fd.write(entry + '\n')
 
     def run(self):
+        if self.__usersFile:
+            self.request_users_file_TGTs()
+            return
+
         if self.__doKerberos:
             target = self.getMachineName()
         else:
@@ -206,10 +210,6 @@ class GetUserNoPreAuth:
                 target = self.__kdcHost
             else:
                 target = self.__domain
-
-        if self.__usersFile:
-            self.request_users_file_TGTs()
-            return
 
         # Are we asked not to supply a password?
         if self.__doKerberos is False and self.__no_pass is True:
@@ -345,7 +345,7 @@ if __name__ == '__main__':
                                   "'Do not require Kerberos preauthentication' set and export their TGTs for cracking")
 
     parser.add_argument('target', action='store', help='domain/username[:password]')
-    parser.add_argument('-request', action='store_true', default='False', help='Requests TGT for users and output them '
+    parser.add_argument('-request', action='store_true', default=False, help='Requests TGT for users and output them '
                                                                                'in JtR/hashcat format (default False)')
     parser.add_argument('-outputfile', action='store',
                         help='Output filename to write ciphers in JtR/hashcat format')

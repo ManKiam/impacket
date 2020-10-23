@@ -162,7 +162,7 @@ class PSEXEC:
                 installService = serviceinstall.ServiceInstall(rpctransport.get_smb_connection(), remcomsvc.RemComSvc())
             else:
                 try:
-                    f = open(self.__exeFile)
+                    f = open(self.__exeFile, 'rb')
                 except Exception as e:
                     logging.critical(str(e))
                     sys.exit(1)
@@ -902,7 +902,7 @@ class RAISECHILD:
             validationInfo = VALIDATION_INFO()
             validationInfo.fromString(pacInfos[PAC_LOGON_INFO])
             lenVal = len(validationInfo.getData())
-            validationInfo.fromStringReferents(data[lenVal:], lenVal)
+            validationInfo.fromStringReferents(data, lenVal)
 
             if logging.getLogger().level == logging.DEBUG:
                 logging.debug('VALIDATION_INFO before making it gold')

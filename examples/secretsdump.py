@@ -82,7 +82,7 @@ from impacket.krb5 import constants
 from impacket.krb5.crypto import string_to_key
 try:
     from Crypto.Cipher import DES, ARC4, AES
-    from Crypto.Hash import HMAC, MD4
+    from Crypto.Hash import HMAC, MD4, MD5
 except ImportError:
     LOG.critical("Warning: You don't have any crypto installed. You need pycryptodomex")
     LOG.critical("See https://pypi.org/project/pycryptodomex/")
@@ -684,7 +684,7 @@ class RemoteOperations:
         if self.__disabled is True:
             LOG.info('Restoring the disabled state for service %s' % self.__serviceName)
             scmr.hRChangeServiceConfigW(self.__scmr, self.__serviceHandle, dwStartType = 0x4)
-        if self.__serviceDeleted is False:
+        if self.__serviceDeleted is False and self.__tmpServiceName is not None:
             # Check again the service we created does not exist, starting a new connection
             # Why?.. Hitting CTRL+C might break the whole existing DCE connection
             try:
@@ -1322,7 +1322,7 @@ class LSASecrets(OfflineRegistry):
         return secret['Secret']
 
     def __decryptHash(self, key, value, iv):
-        hmac_md5 = HMAC.new(key,iv,digestmod=hashlib.md5)
+        hmac_md5 = HMAC.new(key,iv,MD5)
         rc4key = hmac_md5.digest()
 
         rc4 = ARC4.new(rc4key)
@@ -1528,10 +1528,11 @@ class LSASecrets(OfflineRegistry):
                                                   hexlify(md4.digest()).decode('utf-8'))
             # Attempt to calculate and print Kerberos keys
             if not self.__printMachineKerberos(secretItem, printname):
-                LOG.debug('Could not calculate machine account Kerberos keys, printing plain password (hex encoded)')
-                extrasecret = "$MACHINE.ACC:plain_password_hex:%s" % hexlify(secretItem).decode('utf-8')
-                self.__secretItems.append(extrasecret)
-                self.__perSecretCallback(LSASecrets.SECRET_TYPE.LSA, extrasecret)
+                LOG.debug('Could not calculate machine account Kerberos keys, only printing plain password (hex encoded)')
+            # Always print plaintext anyway since this may be needed for some popular usecases
+            extrasecret = "%s:plain_password_hex:%s" % (printname, hexlify(secretItem).decode('utf-8'))
+            self.__secretItems.append(extrasecret)
+            self.__perSecretCallback(LSASecrets.SECRET_TYPE.LSA, extrasecret)
 
         if secret != '':
             printableSecret = secret
