@@ -13,7 +13,7 @@
 from struct import unpack, pack
 from binascii import hexlify, unhexlify
 import traceback
-from Cryptodome.Cipher import ARC4
+from Crypto.Cipher import ARC4
 from impacket import LOG, ntlm
 from impacket.smbconnection import SMBConnection
 from impacket.examples.ntlmrelayx.clients import ProtocolClient
